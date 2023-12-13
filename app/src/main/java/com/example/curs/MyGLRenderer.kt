@@ -14,19 +14,17 @@ class MyGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
     private val viewMatrix = FloatArray(16)
 
     private lateinit var table: RawModel
-    private val textureHandler = TextureHandler()
 
     private val eyePos = floatArrayOf(0f, 5f, -10f)
-    private val lightPos = floatArrayOf(0f, 5f, -10f)
-    private var zPos = -50f
+    private val lightPos = floatArrayOf(0f, 10f, -20f, 1f)
 
     override fun onSurfaceCreated(p0: GL10?, p1: EGLConfig?) {
-        GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f)
+        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f)
         GLES20.glDisable(GLES20.GL_CULL_FACE)
         GLES20.glEnable(GLES20.GL_DEPTH_TEST)
 
         table = RawModel(context, R.raw.stol, R.raw.stol_mat, floatArrayOf(0f, 0f, 0f), 1f, false)
-        //table.rotate(180f, 0f, 1f, 0f)
+        //table.rotate(90f, 0f, 1f, 0f)
     }
 
     override fun onSurfaceChanged(p0: GL10?, width: Int, height: Int) {
@@ -48,14 +46,12 @@ class MyGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
         /*eyePos[0] = (Math.cos(angle) * 15f).toFloat()
         eyePos[1] = 5f
-        eyePos[2] = (Math.sin(angle) * 15f).toFloat()
+        eyePos[2] = (Math.sin(angle) * 15f).toFloat()*/
 
-        zPos += 0.1f*/
-        //eyePos[2] = zPos
         Matrix.setLookAtM(viewMatrix, 0, eyePos[0], eyePos[1], eyePos[2], 0f, 0f, 0f, 0f, 1f, 0f)
         Matrix.multiplyMM(vpMatrix, 0, projectionMatrix, 0, viewMatrix, 0)
-        //table.rotate(0.5f, 0f, 1f, 0f)
-        table.draw(vpMatrix, eyePos, lightPos)
+        table.rotate(0.5f, 0f, 1f, 0f)
+        table.draw(viewMatrix, projectionMatrix, eyePos, lightPos)
         //sphere.draw(vpMatrix)
     }
 }

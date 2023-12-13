@@ -7,11 +7,6 @@ import android.util.Log
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.nio.FloatBuffer
-import java.nio.ShortBuffer
-import java.util.Collections
 
 class RawModel(
         context: Context,
@@ -50,14 +45,22 @@ class RawModel(
         Log.d("COLOR", color[3].toString())
     }
 
-    fun draw(VPMatrix: FloatArray?, eyePos: FloatArray, lightPos: FloatArray) {
+    fun draw(viewMatrix: FloatArray?, projectionMatrix: FloatArray, eyePos: FloatArray, lightPos: FloatArray) {
         val tmp = FloatArray(16)
         Matrix.multiplyMM(tmp, 0, rotationMatrix, 0, translationMatrix, 0)
         Matrix.multiplyMM(modelMatrix, 0, scaleMatrix, 0, tmp, 0)
+        val VPMatrix = FloatArray(16)
+        Matrix.multiplyMM(VPMatrix, 0, projectionMatrix, 0, viewMatrix, 0)
         Matrix.multiplyMM(MVPMatrix, 0, VPMatrix, 0, modelMatrix, 0)
+
+        val normalMatrix = FloatArray(16)
+        val inverted = FloatArray(16)
+        Matrix.invertM(inverted, 0, modelMatrix, 0)
+        Matrix.transposeM(normalMatrix, 0, inverted, 0)
+
         GLES20.glUseProgram(shaderProgram)
         for(mesh in meshes){
-            mesh.draw(MVPMatrix, modelMatrix, eyePos, lightPos, shaderProgram)
+            mesh.draw(MVPMatrix, normalMatrix, modelMatrix, eyePos, lightPos, shaderProgram)
         }
     }
 
@@ -230,7 +233,7 @@ class RawModel(
                 }
             }
         }
-        var indexArray = ShortArray(indices.size)
+        val indexArray = ShortArray(indices.size)
         val normalValue = FloatArray(verticies.size)
         val normalCount = FloatArray(verticies.size)
         for (i in verticies.indices) {

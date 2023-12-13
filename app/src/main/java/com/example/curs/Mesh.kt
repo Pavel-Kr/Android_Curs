@@ -4,7 +4,6 @@ import android.opengl.GLES20
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
-import java.nio.ShortBuffer
 
 class Mesh(
     private val material: Material
@@ -66,7 +65,7 @@ class Mesh(
             }
     }
 
-    fun draw(VPMatrix: FloatArray?, modelMatrix: FloatArray, eyePos: FloatArray, lightPos: FloatArray, shaderProgram: Int){
+    fun draw(MVPMatrix: FloatArray?, normalMatrix: FloatArray, modelMatrix: FloatArray, eyePos: FloatArray, lightPos: FloatArray, shaderProgram: Int){
         if (material.hasTexture){
             val textureHandle = GLES20.glGetAttribLocation(shaderProgram, "a_TexCord")
             val textureLocation = GLES20.glGetUniformLocation(shaderProgram, "u_Texture")
@@ -91,8 +90,9 @@ class Mesh(
         //Определяем заголовки для последующего связывания переменных с шейдерами
         val positionHandle = GLES20.glGetAttribLocation(shaderProgram, "a_Position")
         val normalHandle = GLES20.glGetAttribLocation(shaderProgram, "a_Normal")
-        val vpMatrixHandle = GLES20.glGetUniformLocation(shaderProgram, "u_VPMatrix")
+        val mvpMatrixHandle = GLES20.glGetUniformLocation(shaderProgram, "u_MVPMatrix")
         val modelMatrixHandle = GLES20.glGetUniformLocation(shaderProgram, "u_ModelMatrix")
+        val normalMatrixHandle = GLES20.glGetUniformLocation(shaderProgram, "u_NormalMatrix")
         val eyeHandle = GLES20.glGetUniformLocation(shaderProgram, "u_EyePos")
         val lightHandle = GLES20.glGetUniformLocation(shaderProgram, "u_LightPos")
 
@@ -111,8 +111,9 @@ class Mesh(
         GLES20.glVertexAttribPointer(normalHandle, 3, GLES20.GL_FLOAT, false, 0, normalBuffer)
 
         //РџРµСЂРµРґР°С‘Рј РјР°С‚СЂРёС†Сѓ РїСЂРѕРµРєС†РёРё
-        GLES20.glUniformMatrix4fv(vpMatrixHandle, 1, false, VPMatrix, 0)
+        GLES20.glUniformMatrix4fv(mvpMatrixHandle, 1, false, MVPMatrix, 0)
         GLES20.glUniformMatrix4fv(modelMatrixHandle, 1, false, modelMatrix, 0)
+        GLES20.glUniformMatrix4fv(normalMatrixHandle, 1, false, normalMatrix, 0)
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount)
         GLES20.glDisableVertexAttribArray(positionHandle)
